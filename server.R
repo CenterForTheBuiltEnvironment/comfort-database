@@ -1,10 +1,10 @@
-library(shiny)
-library(ggplot2)
-library(scales)
-library(ordinal)
-library(grid)
-library(shinyapps)
-library(shinyIncubator)
+require(shiny)
+require(ggplot2)
+require(scales)
+require(ordinal)
+require(grid)
+#library(shinyapps)
+require(shinyIncubator)
 
 #data!
 # db1<-read.csv("AD2_viz.tool_CSV_Final_December.csv",stringsAsFactors=F,na.strings=c("NA",""))
