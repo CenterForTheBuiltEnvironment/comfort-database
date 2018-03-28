@@ -5,11 +5,24 @@ library(ordinal)
 library(grid)
 library(shinyapps)
 library(shinyIncubator)
+require(rdrop2)
+require(boxr)
 
 #data!
-# db1<-read.csv("AD2_viz.tool_CSV_Final_December.csv",stringsAsFactors=F,na.strings=c("NA",""))
-db1<-read.csv("AD2_viz.tool_CSV_Final_Completed_2017.csv",stringsAsFactors=F,na.strings=c("NA",""))
-# db1<-read.csv("AD2_viz.tool_TOBY_102816.csv",stringsAsFactors=F,na.strings=c("NA",""))
+
+# outputDir <- "https://www.dropbox.com/s/fwmzxc82e9a0f93/AD2_viz.tool_CSV_Final_Completed_2017.csv?dl=0"
+# filesInfo <- drop_dir(outputDir)
+# # filePaths <- filesInfo$path
+# db1 <- lapply(filesInfo, drop_read_csv, stringsAsFactors = FALSE)
+
+db1<-read.csv("https://www.dropbox.com/s/fwmzxc82e9a0f93/AD2_viz.tool_CSV_Final_Completed_2017.csv?dl=1",stringsAsFactors=F,na.strings=c("NA",""))
+
+# https://app.box.com/file/285295149392
+# db2 <- box_read(285295149392)
+# db1<-readr::read_csv("https://www.dropbox.com/s/fwmzxc82e9a0f93/AD2_viz.tool_CSV_Final_Completed_2017.csv?dl=0")
+# db1 <- repmis::source_DropboxData("AD2_viz.tool_CSV_Final_Completed_2017.csv","fwmzxc82e9a0f93",header=T)
+# db1<-read.csv("AD2_viz.tool_CSV_Final_Completed_2017.csv",stringsAsFactors=F,na.strings=c("NA",""))
+
 
 #personal control columns
 # ctrvarlist<-list("Window" = "PCEC1","External door" = "PCEC2","Internal door" = "PCEC3","Thermostat" = "PCEC4",

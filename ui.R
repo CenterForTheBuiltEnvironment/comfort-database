@@ -8,7 +8,8 @@ library(shinyIncubator)
 filterOptions<-function(id,data_select,filterTemp,filterAcc){
   
   
-  tabsetPanel(position="left",
+  tabsetPanel(
+    # position="left", # the "position" function is deprecated"
               
               tabPanel(id=paste0("bldg",id),title="building",
                        
@@ -20,7 +21,7 @@ filterOptions<-function(id,data_select,filterTemp,filterAcc){
 
                        
                        if(filterTemp){
-                         if(filterAcc){
+                         if(filterAcc){sliderInput
                            wellPanel(
                              selectInput(paste0("metric",id), "Satisfaction metric:",
                                          list("Acceptability" = "tsa_ash_level", 
@@ -77,35 +78,35 @@ filterOptions<-function(id,data_select,filterTemp,filterAcc){
                            checkboxInput(paste0("prev",id),"Filter by prevailing mean outdoor temperature"),
                            conditionalPanel(condition=paste0("input.prev",id, "& input.units", substring(id,0,nchar(id)-1),"=='Metric'"),
                                             sliderInput(paste0("outRange",id), label="", 
-                                                        min = -25, max = 50, value = c(-25,50), step= 1, format="0°C")),
+                                                        min = -25, max = 50, value = c(-25,50), step= 1, post="°C")),
                            conditionalPanel(condition=paste0("input.prev",id,"& input.units", substring(id,0,nchar(id)-1),"=='Imperial'"),
                                             sliderInput(paste0("outRange_F",id), label="", 
-                                                        min = -13, max = 104, value = c(-13,104), step= 1, format="0°F")),
+                                                        min = -13, max = 104, value = c(-13,104), step= 1, post="°C")),
                            
                            checkboxInput(paste0("taav",id),"Filter by indoor temperature"),
                            conditionalPanel(condition=paste0("input.taav",id, "& input.units", substring(id,0,nchar(id)-1),"=='Metric'"),
                                             sliderInput(paste0("inRange",id), label="", 
-                                                        min = -25, max = 50, value = c(-25,50), step= 1, format="0°C")),
+                                                        min = -25, max = 50, value = c(-25,50), step= 1, post="°C")),
                            conditionalPanel(condition=paste0("input.taav",id,"& input.units", substring(id,0,nchar(id)-1),"=='Imperial'"),
                                             sliderInput(paste0("inRange_F",id), label="", 
-                                                        min = -13, max = 104, value = c(-13,104), step= 1, format="0°F")),
+                                                        min = -13, max = 104, value = c(-13,104), step= 1, post="°F")),
                            
                            checkboxInput(paste0("trav",id),"Filter by radiant temperature"),
                            conditionalPanel(condition=paste0("input.trav",id, "& input.units", substring(id,0,nchar(id)-1),"=='Metric'"),
                                             sliderInput(paste0("radRange",id), label="", 
-                                                        min = -25, max = 50, value = c(-25,50), step= 1, format="0°C")),
+                                                        min = -25, max = 50, value = c(-25,50), step= 1, post="°C")),
                            conditionalPanel(condition=paste0("input.trav",id,"& input.units", substring(id,0,nchar(id)-1),"=='Imperial'"),
                                             sliderInput(paste0("radRange_F",id), label="", 
-                                                        min = -13, max = 104, value = c(-13,104), step= 1, format="0°F")),
+                                                        min = -13, max = 104, value = c(-13,104), step= 1, post="°F")),
                            
                            
                            checkboxInput(paste0("top",id),"Filter by operative temperature"),
                            conditionalPanel(condition=paste0("input.top",id, "& input.units", substring(id,0,nchar(id)-1),"=='Metric'"),
                                             sliderInput(paste0("optRange",id), label="", 
-                                                        min = 0, max = 50, value = c(0,50), step= 1, format="0°C")),
+                                                        min = 0, max = 50, value = c(0,50), step= 1, post="°C")),
                            conditionalPanel(condition=paste0("input.top",id,"& input.units", substring(id,0,nchar(id)-1),"=='Imperial'"),
                                             sliderInput(paste0("optRange_F",id), label="", 
-                                                        min = 32, max = 104, value = c(32,104), step= 1, format="0°F"))
+                                                        min = 32, max = 104, value = c(32,104), step= 1, post="°F"))
                            
                          )
                        },
@@ -113,14 +114,14 @@ filterOptions<-function(id,data_select,filterTemp,filterAcc){
                          checkboxInput(paste0("rh",id),"Filter by relative humidity"),
                          conditionalPanel(condition=paste0("input.rh",id),
                                           sliderInput(paste0("RH",id), "Relative humidity:", 
-                                                      min = 0, max = 100, value = c(0,100), step= 1,format="0 %")),
+                                                      min = 0, max = 100, value = c(0,100), step= 1,post="0 %")),
                          checkboxInput(paste0("velfilter",id),"Filter by air speed"),
                          conditionalPanel(condition=paste0("input.velfilter",id, "& input.units", substring(id,0,nchar(id)-1),"=='Metric'"),
                                           sliderInput(paste0("vel",id), "", 
-                                                      min = 0, max = 6, value = c(0,2), step= 0.1,format="0 m/s")),
+                                                      min = 0, max = 6, value = c(0,2), step= 0.1,post="0 m/s")),
                          conditionalPanel(condition=paste0("input.velfilter",id, "& input.units", substring(id,0,nchar(id)-1),"=='Imperial'"),
                                           sliderInput(paste0("vel_fpm",id), "", 
-                                                      min = 0, max = 1180, value = c(0,400), step= 10,format="0 fpm")))
+                                                      min = 0, max = 1180, value = c(0,400), step= 10,post="0 fpm")))
               ),
               
               
@@ -335,11 +336,11 @@ HTML('<hr style="border-color: black;">')
                         
                         conditionalPanel(condition="input.units_bins=='Metric'",
                                          sliderInput("outRange_bins", "Range of outdoor temperature:", 
-                                                     min = -25, max = 50, value = c(-25,40), step= 1, format="0°C")),
+                                                     min = -25, max = 50, value = c(-25,40), step= 1, post="°C")),
                         
                         conditionalPanel(condition="input.units_bins=='Imperial'",
                                          sliderInput("outRange_bins_F", "Range of outdoor temperature:", 
-                                                     min = -13, max = 122, value = c(-13,104), step= 1, format="0°F")),
+                                                     min = -13, max = 122, value = c(-13,104), step= 1, post="°F")),
                         
                         checkboxInput("ashrae","Show ASHRAE 55 comfort zone",value=F),
                         checkboxInput("en","Show EN 15251 comfort zone", value=F)
@@ -352,13 +353,13 @@ HTML('<hr style="border-color: black;">')
                         conditionalPanel(condition="input.units_bins=='Metric'",
                                          
                                          sliderInput("inRange_bins", "Range of indoor temperature:", 
-                                                     min = 0, max = 50, value = c(6,46), step= 1, format="0°C")
+                                                     min = 0, max = 50, value = c(6,46), step= 1, post="°C")
                         ),
                         
                         conditionalPanel(condition="input.units_bins=='Imperial'",
                                          
                                          sliderInput("inRange_bins_F", "Range of indoor temperature:", 
-                                                     min = 32, max = 122, value = c(42,115), step= 1, format="0°F")
+                                                     min = 32, max = 122, value = c(42,115), step= 1, post="°F")
                         )),
                  
                  
@@ -430,11 +431,11 @@ HTML('<hr style="border-color: black;">')
                         
                         conditionalPanel(condition="input.units_S=='Metric'",
                                          sliderInput("tempRange_S", "Range of temperature in x-axis:", 
-                                                     min = -25, max = 50, value = c(10,40), step= 1, format="0°C")),
+                                                     min = -25, max = 50, value = c(10,40), step= 1, post="°C")),
                         
                         conditionalPanel(condition="input.units_S=='Imperial'",
                                          sliderInput("tempRange_S_F", "Range of temperature in x-axis:", 
-                                                     min = -13, max = 122, value = c(45,110), step= 1, format="0°F")),
+                                                     min = -13, max = 122, value = c(45,110), step= 1, post="°F")),
                         
                         conditionalPanel(condition="input.xaxis_elev == 'TOP'",
                                          checkboxInput("elev05","Show elevated velocity comfort zone (0.5clo)", value=F),
@@ -463,7 +464,9 @@ HTML('<hr style="border-color: black;">')
                                          "Clothing insulation"="INSUL",
                                          "TSV"="TSV",
                                          "PMV"="PMV"), selectize=F, selected="AirTemp"),
-                        checkboxInput("sca_1_linear","Show regression line in plot-1", value=F)
+                        checkboxInput("sca_1_linear","Show regression line in plot-1", value=F),
+                        p("(It may take a while in loading regression line "),
+                        p("for large dataset)")
                  ),
                  
                  column(2,
@@ -487,7 +490,9 @@ HTML('<hr style="border-color: black;">')
                                          "Clothing insulation"="INSUL",
                                          "TSV"="TSV",
                                          "PMV"="PMV"), selectize=F, selected="AirTemp"),
-                        checkboxInput("sca_2_linear","Show regression line in plot-2", value=F)
+                        checkboxInput("sca_2_linear","Show regression line in plot-2", value=F),
+                        p("(It may take a while in loading regression line"),
+                        p("for large dataset)")
                  ),                      
                  
                  column(2,
