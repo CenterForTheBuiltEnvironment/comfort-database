@@ -1,14 +1,3 @@
-<<<<<<< HEAD
-library(shiny)
-library(ggplot2)
-library(scales)
-library(ordinal)
-library(grid)
-library(shinyapps)
-library(shinyIncubator)
-require(rdrop2)
-require(boxr)
-=======
 require(shiny)
 require(ggplot2)
 require(scales)
@@ -16,7 +5,9 @@ require(ordinal)
 require(grid)
 #library(shinyapps)
 require(shinyIncubator)
->>>>>>> origin/master
+require(rdrop2)
+# require(boxr)
+
 
 #data!
 
