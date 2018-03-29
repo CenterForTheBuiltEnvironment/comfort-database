@@ -1,6 +1,6 @@
-library(shiny)
-library(shinyapps)
-library(shinyIncubator)
+require(shiny)
+#library(shinyapps)
+require(shinyIncubator)
 
 
 
