@@ -3,35 +3,28 @@ require(ggplot2)
 require(scales)
 require(ordinal)
 require(grid)
+require(stringr)
 #library(shinyapps)
 require(shinyIncubator)
-require(rdrop2)
-# require(boxr)
 
 
-#data!
 
-# outputDir <- "https://www.dropbox.com/s/fwmzxc82e9a0f93/AD2_viz.tool_CSV_Final_Completed_2017.csv?dl=0"
-# filesInfo <- drop_dir(outputDir)
-# # filePaths <- filesInfo$path
-# db1 <- lapply(filesInfo, drop_read_csv, stringsAsFactors = FALSE)
+#data! (Use R.Data instead of csv)
+# db1 <- read.csv("C:/Users/sbbtcg/Desktop/DBII_trial/comfortdatabase-master/DatabaseI&II_20180724.csv",stringsAsFactors=F,na.strings=c("NA",""))   #use this to same a RDA for "db1" first
+# db1 <- read.csv("C:/Users/sbbtcg/Desktop/DBII_trial/comfortdatabase-master/Database1&2_vs.csv",stringsAsFactors=F,na.strings=c("NA",""))   #use this to same a RDA for "db1" first
+load("DBII_new_dataset1.RData")      #Unlock this when uploading online
 
-db1<-read.csv("https://www.dropbox.com/s/fwmzxc82e9a0f93/AD2_viz.tool_CSV_Final_Completed_2017.csv?dl=1",stringsAsFactors=F,na.strings=c("NA",""))
+colnames(db1) <- c("Publication","Contributor","Year","season","Koppen","climate","city","country","BLTYPE","cooling.strategy","Mix.operation","Heat.mode",
+                   "AGE","SEX","ASH","TSA","tsa_ash_level","acc15","ash15_level","acc2","Preference","mci_level","acc_pref","vel_acc","vel_pref",
+                   "Comfort","acc_comf","comf_ash_level","PMV","PPD","SET","INSUL","MET","act10","act20","act30","act40",
+                   "TAAV","TAAV_F","Ta_h","Ta_h_F","Ta_m","Ta_m_F","Ta_l","Ta_l_F",
+                   "TOP","TOP_F","TRAV","TRAV_F","TGO","TGO_F","Tg_h","Tg_h_F","Tg_m","Tg_m_F","Tg_l","Tg_l_F",
+                   "RH","rh_pref","rh_sen","VELAV","VELAV_FPM","v_h","v_h_fpm","v_m","v_m_fpm","v_l","v_l_fpm","Height","Weight",
+                   "PCEC1","PCEC2","PCEC3","PCEC4","PCEC5","prev_ta","prev_ta_F","database")
 
-# https://app.box.com/file/285295149392
-# db2 <- box_read(285295149392)
-# db1<-readr::read_csv("https://www.dropbox.com/s/fwmzxc82e9a0f93/AD2_viz.tool_CSV_Final_Completed_2017.csv?dl=0")
-# db1 <- repmis::source_DropboxData("AD2_viz.tool_CSV_Final_Completed_2017.csv","fwmzxc82e9a0f93",header=T)
-# db1<-read.csv("AD2_viz.tool_CSV_Final_Completed_2017.csv",stringsAsFactors=F,na.strings=c("NA",""))
-
-
-#personal control columns
-# ctrvarlist<-list("Window" = "PCEC1","External door" = "PCEC2","Internal door" = "PCEC3","Thermostat" = "PCEC4",
-#                  "Curtains/blinds" = "PCEC5","Local heater" = "PCEC6","Local fan" = "PCEC7")
-# ctrvars<-c("PCEC1","PCEC2","PCEC3","PCEC4","PCEC5","PCEC6","PCEC7")
 #keep only useful columns
-# columns<-c("database","city","TOP","TAAV","dayav_ta","prev_ta","cooling.strategy","ash15_level","tsa_ash_level","comf_ash_level","mci_level","season","country","climate","PMV","ASH","TSA","TSA_ord","acc15","acc2","acc_comf",ctrvars,"VELAV","RH","AGE","SEX","INSUL","MET","TOP_F","TAAV_F","dayav_ta_F","prev_ta_F","VELAV_FPM","TRAV","TRAV_F","BLTYPE")
-columns<-c("database","city","TOP","TAAV","dayav_ta","prev_ta","cooling.strategy","ash15_level","tsa_ash_level","comf_ash_level","mci_level","season","country","climate","PMV","ASH","TSA","TSA_ord","acc15","acc2","acc_comf","PCEC1","PCEC2","PCEC3","PCEC4","PCEC5","PCEC6","PCEC7","VELAV","RH","AGE","SEX","INSUL","MET","TOP_F","TAAV_F","dayav_ta_F","prev_ta_F","VELAV_FPM","TRAV","TRAV_F","BLTYPE")
+# columns<-c("database","city","TOP","TAAV","prev_ta","cooling.strategy","ash15_level","tsa_ash_level","comf_ash_level","mci_level","season","country","climate","PMV","ASH","TSA","acc15","acc2","acc_comf","PCEC1","PCEC2","PCEC3","PCEC4","PCEC5","PCEC6","PCEC7","VELAV","RH","AGE","SEX","INSUL","MET","TOP_F","TAAV_F","prev_ta_F","VELAV_FPM","TRAV","TRAV_F","BLTYPE")
+columns<-c("database","city","TOP","TAAV","prev_ta","cooling.strategy","ash15_level","tsa_ash_level","comf_ash_level","mci_level","season","country","climate","PMV","ASH","TSA","acc15","acc2","acc_comf","PCEC1","PCEC2","PCEC3","PCEC4","PCEC5","VELAV","RH","AGE","SEX","INSUL","MET","TOP_F","TAAV_F","prev_ta_F","VELAV_FPM","TRAV","TRAV_F","BLTYPE")
 
 db1<-db1[,columns]
 
@@ -44,9 +37,11 @@ db1$tsa_ash_level<-factor(db1$tsa_ash_level,levels=c("cold","ok","hot"),ordered=
 db1$mci_level<-factor(db1$mci_level,levels=c("cold","ok","hot"),ordered=T)
 
 #pretty names for axes and such
-labelDict<-data.frame(key=c("TSA","acc15","acc2","TAAV","dayav_ta","TOP","TRAV","PMV","ASH","acc_comf","acc_pref","city","cooling.strategy","ash15_probit","tsa_ash_probit","comf_ash_probit","mci_probit","COMF","MCI","N","prev_ta","TOP_F","TAAV_F","dayav_ta_F","prev_ta_F","TRAV_F","VELAV","VELAV_FPM","season","BLTYPE","MET","INSUL","RH","PCEC1","PCEC2","PCEC3","PCEC4","PCEC5","PCEC6","PCEC7"),
-                      label=c("Acceptability","Sensation +-1.5","Sensation +-2","Indoor air temperature (°C)","Mean daily outdoor temperature (°C)","Operative temperature (°C)","Indoor radiant temperature (°C)","PMV","Thermal sensation","Thermal comfort","Thermal preference","Location","Ventilation type","Sensation +-1.5","Acceptability","Comfort","Preference","Comfort","Preference","N","Prevailing mean outdoor temperature (°C)",
-                              "Operative temperature (°F)","Indoor air temperature (°F)","Mean daily outdoor temperature (°F)","Prevailing mean outdoor temperature (°F)","Indoor radiant temperature (°F)","Air Speed (m/s)","Air Speed (fpm)","Season","Building type","Metabolic rate (MET)","Clothing insulation (clo)","Relative humidity (%)","Window","External door","Internal door","Thermostat","Curtain","Heater","Fan"))
+
+labelDict<-data.frame(key=c("TSA","acc15","acc2","TAAV","TOP","TRAV","PMV","ASH","acc_comf","acc_pref","city","cooling.strategy","ash15_probit","tsa_ash_probit","comf_ash_probit","mci_probit","COMF","MCI","N","prev_ta","TOP_F","TAAV_F","prev_ta_F","TRAV_F","VELAV","VELAV_FPM","season","BLTYPE","MET","INSUL","RH","PCEC1","PCEC2","PCEC3","PCEC4","PCEC5"),
+                      label=c("Acceptability","Sensation +-1.5","Sensation +-2","Indoor air temperature (°C)","Operative temperature (°C)","Indoor radiant temperature (°C)","PMV","Thermal sensation","Thermal comfort","Thermal preference","Location","Ventilation type","Sensation +-1.5","Acceptability","Comfort","Preference","Comfort","Preference","N","Monthly mean outdoor temperature (°C)",
+                              "Operative temperature (°F)","Indoor air temperature (°F)","Monthly mean outdoor temperature (°F)","Indoor radiant temperature (°F)","Air Speed (m/s)","Air Speed (fpm)","Season","Building type","Metabolic rate (MET)","Clothing insulation (clo)","Relative humidity (%)","Blind","Fan","Window","Door","Heater"))
+
 getLabel<-function(x){as.character(labelDict[labelDict$key==x,"label"])}
 
 #function for squaring the labels of the size legend
@@ -229,62 +224,17 @@ shinyServer(function(input, output, session) {
   #filter human factor
   filterControl1<- reactive({
     current <- filterCond1()
-    if(input$winfilter1){current<-current[current$PCEC1 %in% input$win1 & !is.na(current$PCEC1),]}
-    if(input$extfilter1){current<-current[current$PCEC2 %in% input$ext1 & !is.na(current$PCEC2),]}
-    if(input$intfilter1){current<-current[current$PCEC3 %in% input$int1 & !is.na(current$PCEC3),]}
-    if(input$thermofilter1){current<-current[current$PCEC4 %in% input$thermo1 & !is.na(current$PCEC4),]}
-    if(input$curfilter1){current<-current[current$PCEC5 %in% input$cur1 & !is.na(current$PCEC5),]}
-    if(input$heatfilter1){current<-current[current$PCEC6 %in% input$heat1 & !is.na(current$PCEC6),]}
-    if(input$fanfilter1){current<-current[current$PCEC7 %in% input$fan1 & !is.na(current$PCEC7),]}
+    if(input$curfilter1){current<-current[current$PCEC1 %in% input$cur1 & !is.na(current$PCEC1),]}
+    if(input$fanfilter1){current<-current[current$PCEC2 %in% input$fan1 & !is.na(current$PCEC2),]}
+    if(input$winfilter1){current<-current[current$PCEC3 %in% input$win1 & !is.na(current$PCEC3),]}
+    if(input$doorfilter1){current<-current[current$PCEC4 %in% input$door1 & !is.na(current$PCEC4),]}
+    if(input$heatfilter1){current<-current[current$PCEC5 %in% input$heat1 & !is.na(current$PCEC5),]}
+    # if(input$heatfilter1){current<-current[current$PCEC6 %in% input$heat1 & !is.na(current$PCEC6),]}
+    # if(input$fanfilter1){current<-current[current$PCEC7 %in% input$fan1 & !is.na(current$PCEC7),]}
     current
   })
   
-  
-#   #possible controls
-#   output$controls1 <- renderUI( {
-#     availControls<-ctrvarlist[apply(filterCond1()[,ctrvars],2,FUN=function(x)max(x,na.rm=T)>0)]
-#     if(length(availControls>=1)){
-#       checkboxGroupInput("pclist1","",choices=availControls,selected=availControls)}
-#   })
-#   
-#   #filter controls
-#   filterControl1<-reactive({
-#     current<-filterCond1()
-#     if(input$pc1){
-#       if(input$andor1=="and"){
-#         if(length(input$pclist1)>1){
-#           a<-apply(current[,input$pclist1],1,all)
-#         } else if(length(input$pclist1==1)){
-#           a<-current[,input$pclist1]
-#         } else {
-#           a<-T
-#         }
-#         current[!is.na(a) & a,]
-#       } else if (input$andor1=="no"){
-#         if(length(input$pclist1)>1){
-#           a<-apply(current[,input$pclist1],1,any)
-#         } else if(length(input$pclist1==1)){
-#           a<-current[,input$pclist1]
-#         } else {
-#           a<-F
-#         }
-#         current[!is.na(a) & !a,]
-#       } else if (input$andor1=="or"){
-#         if(length(input$pclist1)>1){
-#           a<-apply(current[,input$pclist1],1,any)
-#         } else if(length(input$pclist1==1)){
-#           a<-current[,input$pclist1]
-#         } else {
-#           a<-T
-#         }
-#         current[!is.na(a) & a,]
-#       }
-#     } else{
-#       current 
-#     }
-#   })
-  
-  
+ 
   #filter misc
   filterMisc1<-reactive({
     current<-filterControl1()
@@ -419,63 +369,17 @@ shinyServer(function(input, output, session) {
   #filter human factor
   filterControl2<- reactive({
     current <- filterCond2()
-    if(input$winfilter2){current<-current[current$PCEC1 %in% input$win2 & !is.na(current$PCEC1),]}
-    if(input$extfilter2){current<-current[current$PCEC2 %in% input$ext2 & !is.na(current$PCEC2),]}
-    if(input$intfilter2){current<-current[current$PCEC3 %in% input$int2 & !is.na(current$PCEC3),]}
-    if(input$thermofilter2){current<-current[current$PCEC4 %in% input$thermo2 & !is.na(current$PCEC4),]}
-    if(input$curfilter2){current<-current[current$PCEC5 %in% input$cur2 & !is.na(current$PCEC5),]}
-    if(input$heatfilter2){current<-current[current$PCEC6 %in% input$heat2 & !is.na(current$PCEC6),]}
-    if(input$fanfilter2){current<-current[current$PCEC7 %in% input$fan2 & !is.na(current$PCEC7),]}
+    if(input$curfilter2){current<-current[current$PCEC1 %in% input$cur2 & !is.na(current$PCEC1),]}
+    if(input$fanfilter2){current<-current[current$PCEC2 %in% input$fan2 & !is.na(current$PCEC2),]}
+    if(input$winfilter2){current<-current[current$PCEC3 %in% input$win2 & !is.na(current$PCEC3),]}
+    if(input$doorfilter2){current<-current[current$PCEC4 %in% input$door2 & !is.na(current$PCEC4),]}
+    if(input$heatfilter2){current<-current[current$PCEC5 %in% input$heat2 & !is.na(current$PCEC5),]}
+    # if(input$heatfilter1){current<-current[current$PCEC6 %in% input$heat1 & !is.na(current$PCEC6),]}
+    # if(input$fanfilter1){current<-current[current$PCEC7 %in% input$fan1 & !is.na(current$PCEC7),]}
     current
   })
   
-  
-  
-#   #possible controls
-#   output$controls2 <- renderUI( {
-#     availControls<-ctrvarlist[apply(filterCond2()[,ctrvars],2,FUN=function(x)max(x,na.rm=T)>0)]
-#     if(length(availControls>=1)){
-#       checkboxGroupInput("pclist2","",choices=availControls,selected=availControls)}
-#   })
-#   
-#   #filter controls
-#   filterControl2<-reactive({
-#     current<-filterCond2()
-#     if(input$pc2){
-#       if(input$andor2=="and"){
-#         if(length(input$pclist2)>1){
-#           a<-apply(current[,input$pclist2],1,all)
-#         } else if(length(input$pclist2==1)){
-#           a<-current[,input$pclist2]
-#         } else {
-#           a<-T
-#         }
-#         current[!is.na(a) & a,]
-#       } else if (input$andor2=="no"){
-#         if(length(input$pclist2)>1){
-#           a<-apply(current[,input$pclist2],1,any)
-#         } else if(length(input$pclist2==1)){
-#           a<-current[,input$pclist2]
-#         } else {
-#           a<-F
-#         }
-#         current[!is.na(a) & !a,]
-#       } else if (input$andor2=="or"){
-#         if(length(input$pclist2)>1){
-#           a<-apply(current[,input$pclist2],1,any)
-#         } else if(length(input$pclist2==1)){
-#           a<-current[,input$pclist2]
-#         } else {
-#           a<-T
-#         }
-#         current[!is.na(a) & a,]
-#       }
-#     } else{
-#       current 
-#     }
-#   })
-#   
-  
+
   #filter misc
   filterMisc2<-reactive({
     current<-filterControl2()
@@ -608,62 +512,17 @@ shinyServer(function(input, output, session) {
   #filter human factor
   filterControl3<- reactive({
     current <- filterCond3()
-    if(input$winfilter3){current<-current[current$PCEC1 %in% input$win3 & !is.na(current$PCEC1),]}
-    if(input$extfilter3){current<-current[current$PCEC2 %in% input$ext3 & !is.na(current$PCEC2),]}
-    if(input$intfilter3){current<-current[current$PCEC3 %in% input$int3 & !is.na(current$PCEC3),]}
-    if(input$thermofilter3){current<-current[current$PCEC4 %in% input$thermo3 & !is.na(current$PCEC4),]}
-    if(input$curfilter3){current<-current[current$PCEC5 %in% input$cur3 & !is.na(current$PCEC5),]}
-    if(input$heatfilter3){current<-current[current$PCEC6 %in% input$heat3 & !is.na(current$PCEC6),]}
-    if(input$fanfilter3){current<-current[current$PCEC7 %in% input$fan3 & !is.na(current$PCEC7),]}
+    if(input$curfilter3){current<-current[current$PCEC1 %in% input$cur3 & !is.na(current$PCEC1),]}
+    if(input$fanfilter3){current<-current[current$PCEC2 %in% input$fan3 & !is.na(current$PCEC2),]}
+    if(input$winfilter3){current<-current[current$PCEC3 %in% input$win3 & !is.na(current$PCEC3),]}
+    if(input$doorfilter3){current<-current[current$PCEC4 %in% input$door3 & !is.na(current$PCEC4),]}
+    if(input$heatfilter3){current<-current[current$PCEC5 %in% input$heat3 & !is.na(current$PCEC5),]}
+    # if(input$heatfilter1){current<-current[current$PCEC6 %in% input$heat1 & !is.na(current$PCEC6),]}
+    # if(input$fanfilter1){current<-current[current$PCEC7 %in% input$fan1 & !is.na(current$PCEC7),]}
     current
   })
   
-  
-#   #possible controls
-#   output$controls3 <- renderUI( {
-#     availControls<-ctrvarlist[apply(filterCond3()[,ctrvars],2,FUN=function(x)max(x,na.rm=T)>0)]
-#     if(length(availControls>=1)){
-#       checkboxGroupInput("pclist3","",choices=availControls,selected=availControls)}
-#   })
-#   
-#   #filter controls
-#   filterControl3<-reactive({
-#     current<-filterCond3()
-#     if(input$pc3){
-#       if(input$andor3=="and"){
-#         if(length(input$pclist3)>1){
-#           a<-apply(current[,input$pclist3],1,all)
-#         } else if(length(input$pclist3==1)){
-#           a<-current[,input$pclist3]
-#         } else {
-#           a<-T
-#         }
-#         current[!is.na(a) & a,]
-#       } else if (input$andor3=="no"){
-#         if(length(input$pclist3)>1){
-#           a<-apply(current[,input$pclist3],1,any)
-#         } else if(length(input$pclist3==1)){
-#           a<-current[,input$pclist3]
-#         } else {
-#           a<-F
-#         }
-#         current[!is.na(a) & !a,]
-#       } else if (input$andor3=="or"){
-#         if(length(input$pclist3)>1){
-#           a<-apply(current[,input$pclist3],1,any)
-#         } else if(length(input$pclist3==1)){
-#           a<-current[,input$pclist3]
-#         } else {
-#           a<-T
-#         }
-#         current[!is.na(a) & a,]
-#       }
-#     } else{
-#       current 
-#     }
-#   })
-#   
-  
+
   #filter misc
   filterMisc3<-reactive({
     current<-filterControl3()
@@ -866,7 +725,7 @@ shinyServer(function(input, output, session) {
       }
       if(input$boxplot1 == "OutTemp"){
         var <- "prev_ta"
-        lab <- "Prevailing mean outdoor temperature (°C)"
+        lab <- "Monthly mean outdoor temperature (°C)"
       }
       if(input$boxplot1 == "AirTemp"){
         var <- "TAAV"
@@ -907,7 +766,7 @@ shinyServer(function(input, output, session) {
       }
       if(input$boxplot1 == "OutTemp"){
         var <- "prev_ta_F"
-        lab <- "Prevailing mean outdoor temperature (°F)"
+        lab <- "Monthly mean outdoor temperature (°F)"
       }
       if(input$boxplot1 == "AirTemp"){
         var <- "TAAV_F"
@@ -963,7 +822,7 @@ shinyServer(function(input, output, session) {
       }
       if(input$boxplot2 == "OutTemp"){
         var <- "prev_ta"
-        lab <- "Prevailing mean outdoor temperature (°C)"
+        lab <- "Monthly mean outdoor temperature (°C)"
       }
       if(input$boxplot2 == "AirTemp"){
         var <- "TAAV"
@@ -1004,7 +863,7 @@ shinyServer(function(input, output, session) {
       }
       if(input$boxplot2 == "OutTemp"){
         var <- "prev_ta_F"
-        lab <- "Prevailing mean outdoor temperature (°F)"
+        lab <- "Monthly mean outdoor temperature (°F)"
       }
       if(input$boxplot2 == "AirTemp"){
         var <- "TAAV_F"
@@ -1085,8 +944,6 @@ shinyServer(function(input, output, session) {
 
   #############first 2d bins
   #filter for the first group
-  #it's really ugly to do it individually for both groups
-  #but I can't make it work with the filterGroup function
   filter_bins1<-reactive({
 
     current<-db1
@@ -1210,65 +1067,20 @@ shinyServer(function(input, output, session) {
     current
   })
   
-  
-  #filter human factor
+
   filterControl_bins1<- reactive({
     current <- filterCond_bins1()
-    if(input$winfilter_bins1){current<-current[current$PCEC1 %in% input$win_bins1 & !is.na(current$PCEC1),]}
-    if(input$extfilter_bins1){current<-current[current$PCEC2 %in% input$ext_bins1 & !is.na(current$PCEC2),]}
-    if(input$intfilter_bins1){current<-current[current$PCEC3 %in% input$int_bins1 & !is.na(current$PCEC3),]}
-    if(input$thermofilter_bins1){current<-current[current$PCEC4 %in% input$thermo_bins1 & !is.na(current$PCEC4),]}
-    if(input$curfilter_bins1){current<-current[current$PCEC5 %in% input$cur_bins1 & !is.na(current$PCEC5),]}
-    if(input$heatfilter_bins1){current<-current[current$PCEC6 %in% input$heat_bins1 & !is.na(current$PCEC6),]}
-    if(input$fanfilter_bins1){current<-current[current$PCEC7 %in% input$fan_bins1 & !is.na(current$PCEC7),]}
+    if(input$curfilter_bins1){current<-current[current$PCEC1 %in% input$cur_bins1 & !is.na(current$PCEC1),]}
+    if(input$fanfilter_bins1){current<-current[current$PCEC2 %in% input$fan_bins1 & !is.na(current$PCEC2),]}
+    if(input$winfilter_bins1){current<-current[current$PCEC3 %in% input$win_bins1 & !is.na(current$PCEC3),]}
+    if(input$doorfilter_bins1){current<-current[current$PCEC4 %in% input$door_bins1 & !is.na(current$PCEC4),]}
+    if(input$heatfilter_bins1){current<-current[current$PCEC5 %in% input$heat_bins1 & !is.na(current$PCEC5),]}
+    # if(input$heatfilter1){current<-current[current$PCEC6 %in% input$heat1 & !is.na(current$PCEC6),]}
+    # if(input$fanfilter1){current<-current[current$PCEC7 %in% input$fan1 & !is.na(current$PCEC7),]}
     current
   })
-  
-#   #possible controls
-#   output$controls_bins1 <- renderUI( {
-#     availControls<-ctrvarlist[apply(filterCond_bins1()[,ctrvars],2,FUN=function(x)max(x,na.rm=T)>0)]
-#     if(length(availControls>=1)){
-#       checkboxGroupInput("pclist_bins1","",choices=availControls,selected=availControls)}
-#   })
-#   
-#   #filter controls
-#   filterControl_bins1<-reactive({
-#     current<-filterCond_bins1()
-#     if(input$pc_bins1){
-#       if(input$andor_bins1=="and"){
-#         if(length(input$pclist_bins1)>1){
-#           a<-apply(current[,input$pclist_bins1],1,all)
-#         } else if(length(input$pclist_bins1==1)){
-#           a<-current[,input$pclist_bins1]
-#         } else {
-#           a<-T
-#         }
-#         current[!is.na(a) & a,]
-#       } else if (input$andor_bins1=="no"){
-#         if(length(input$pclist_bins1)>1){
-#           a<-apply(current[,input$pclist_bins1],1,any)
-#         } else if(length(input$pclist_bins1==1)){
-#           a<-current[,input$pclist_bins1]
-#         } else {
-#           a<-F
-#         }
-#         current[!is.na(a) & !a,]
-#       } else if (input$andor_bins1=="or"){
-#         if(length(input$pclist_bins1)>1){
-#           a<-apply(current[,input$pclist_bins1],1,any)
-#         } else if(length(input$pclist_bins1==1)){
-#           a<-current[,input$pclist_bins1]
-#         } else {
-#           a<-T
-#         }
-#         current[!is.na(a) & a,]
-#       }
-#     } else{
-#       current 
-#     }
-#   })
-#   
-  
+ 
+
   #filter misc
   filterMisc_bins1<-reactive({
     current<-filterControl_bins1()
@@ -1532,61 +1344,16 @@ shinyServer(function(input, output, session) {
   #filter human factor
   filterControl_bins2<- reactive({
     current <- filterCond_bins2()
-    if(input$winfilter_bins2){current<-current[current$PCEC1 %in% input$win_bins2 & !is.na(current$PCEC1),]}
-    if(input$extfilter_bins2){current<-current[current$PCEC2 %in% input$ext_bins2 & !is.na(current$PCEC2),]}
-    if(input$intfilter_bins2){current<-current[current$PCEC3 %in% input$int_bins2 & !is.na(current$PCEC3),]}
-    if(input$thermofilter_bins2){current<-current[current$PCEC4 %in% input$thermo_bins2 & !is.na(current$PCEC4),]}
-    if(input$curfilter_bins2){current<-current[current$PCEC5 %in% input$cur_bins2 & !is.na(current$PCEC5),]}
-    if(input$heatfilter_bins2){current<-current[current$PCEC6 %in% input$heat_bins2 & !is.na(current$PCEC6),]}
-    if(input$fanfilter_bins2){current<-current[current$PCEC7 %in% input$fan_bins2 & !is.na(current$PCEC7),]}
+    if(input$curfilter_bins2){current<-current[current$PCEC1 %in% input$cur_bins2 & !is.na(current$PCEC1),]}
+    if(input$fanfilter_bins2){current<-current[current$PCEC2 %in% input$fan_bins2 & !is.na(current$PCEC2),]}
+    if(input$winfilter_bins2){current<-current[current$PCEC3 %in% input$win_bins2 & !is.na(current$PCEC3),]}
+    if(input$doorfilter_bins2){current<-current[current$PCEC4 %in% input$door_bins2 & !is.na(current$PCEC4),]}
+    if(input$heatfilter_bins2){current<-current[current$PCEC5 %in% input$heat_bins2 & !is.na(current$PCEC5),]}
+    # if(input$heatfilter1){current<-current[current$PCEC6 %in% input$heat1 & !is.na(current$PCEC6),]}
+    # if(input$fanfilter1){current<-current[current$PCEC7 %in% input$fan1 & !is.na(current$PCEC7),]}
     current
   })
-  
-  
-  
-#   #possible controls
-#   output$controls_bins2 <- renderUI( {
-#     availControls<-ctrvarlist[apply(filterCond_bins2()[,ctrvars],2,FUN=function(x)max(x,na.rm=T)>0)]
-#     if(length(availControls>=1)){
-#       checkboxGroupInput("pclist_bins2","",choices=availControls,selected=availControls)}
-#   })
-#   
-#   #filter controls
-#   filterControl_bins2<-reactive({
-#     current<-filterCond_bins2()
-#     if(input$pc_bins2){
-#       if(input$andor_bins2=="and"){
-#         if(length(input$pclist_bins2)>1){
-#           a<-apply(current[,input$pclist_bins2],1,all)
-#         } else if(length(input$pclist_bins2==1)){
-#           a<-current[,input$pclist_bins2]
-#         } else {
-#           a<-T
-#         }
-#         current[!is.na(a) & a,]
-#       } else if (input$andor_bins2=="no"){
-#         if(length(input$pclist_bins2)>1){
-#           a<-apply(current[,input$pclist_bins2],1,any)
-#         } else if(length(input$pclist_bins2==1)){
-#           a<-current[,input$pclist_bins2]
-#         } else {
-#           a<-F
-#         }
-#         current[!is.na(a) & !a,]
-#       } else if (input$andor_bins2=="or"){
-#         if(length(input$pclist_bins2)>1){
-#           a<-apply(current[,input$pclist_bins2],1,any)
-#         } else if(length(input$pclist_bins2==1)){
-#           a<-current[,input$pclist_bins2]
-#         } else {
-#           a<-T
-#         }
-#         current[!is.na(a) & a,]
-#       }
-#     } else{
-#       current 
-#     }
-#   })
+
   
   #filter misc
   filterMisc_bins2<-reactive({
@@ -1852,66 +1619,20 @@ shinyServer(function(input, output, session) {
     current
   })
   
-  
-  #filter human factor
+
   filterControl_S1<- reactive({
     current <- filterCond_S1()
-    if(input$winfilter_S1){current<-current[current$PCEC1 %in% input$win_S1 & !is.na(current$PCEC1),]}
-    if(input$extfilter_S1){current<-current[current$PCEC2 %in% input$ext_S1 & !is.na(current$PCEC2),]}
-    if(input$intfilter_S1){current<-current[current$PCEC3 %in% input$int_S1 & !is.na(current$PCEC3),]}
-    if(input$thermofilter_S1){current<-current[current$PCEC4 %in% input$thermo_S1 & !is.na(current$PCEC4),]}
-    if(input$curfilter_S1){current<-current[current$PCEC5 %in% input$cur_S1 & !is.na(current$PCEC5),]}
-    if(input$heatfilter_S1){current<-current[current$PCEC6 %in% input$heat_S1 & !is.na(current$PCEC6),]}
-    if(input$fanfilter_S1){current<-current[current$PCEC7 %in% input$fan_S1 & !is.na(current$PCEC7),]}
+    if(input$curfilter_S1){current<-current[current$PCEC1 %in% input$cur_S1 & !is.na(current$PCEC1),]}
+    if(input$fanfilter_S1){current<-current[current$PCEC2 %in% input$fan_S1 & !is.na(current$PCEC2),]}
+    if(input$winfilter_S1){current<-current[current$PCEC3 %in% input$win_S1 & !is.na(current$PCEC3),]}
+    if(input$doorfilter_S1){current<-current[current$PCEC4 %in% input$door_S1 & !is.na(current$PCEC4),]}
+    if(input$heatfilter_S1){current<-current[current$PCEC5 %in% input$heat_S1 & !is.na(current$PCEC5),]}
+    # if(input$heatfilter1){current<-current[current$PCEC6 %in% input$heat1 & !is.na(current$PCEC6),]}
+    # if(input$fanfilter1){current<-current[current$PCEC7 %in% input$fan1 & !is.na(current$PCEC7),]}
     current
   })
   
-  
-#   #possible controls
-#   output$controls_S1 <- renderUI( {
-#     availControls<-ctrvarlist[apply(filterCond_S1()[,ctrvars],2,FUN=function(x)max(x,na.rm=T)>0)]
-#     if(length(availControls>=1)){
-#       checkboxGroupInput("pclist_S1","",choices=availControls,selected=availControls)}
-#   })
-#   
-#   #filter controls
-#   filterControl_S1<-reactive({
-#     current<-filterCond_S1()
-#     if(input$pc_S1){
-#       if(input$andor_S1=="and"){
-#         if(length(input$pclist_S1)>1){
-#           a<-apply(current[,input$pclist_S1],1,all)
-#         } else if(length(input$pclist_S1==1)){
-#           a<-current[,input$pclist_S1]
-#         } else {
-#           a<-T
-#         }
-#         current[!is.na(a) & a,]
-#       } else if (input$andor_S1=="no"){
-#         if(length(input$pclist_S1)>1){
-#           a<-apply(current[,input$pclist_S1],1,any)
-#         } else if(length(input$pclist_S1==1)){
-#           a<-current[,input$pclist_S1]
-#         } else {
-#           a<-F
-#         }
-#         current[!is.na(a) & !a,]
-#       } else if (input$andor_S1=="or"){
-#         if(length(input$pclist_S1)>1){
-#           a<-apply(current[,input$pclist_S1],1,any)
-#         } else if(length(input$pclist_S1==1)){
-#           a<-current[,input$pclist_S1]
-#         } else {
-#           a<-T
-#         }
-#         current[!is.na(a) & a,]
-#       }
-#     } else{
-#       current 
-#     }
-#   })
-#   
-  
+
   #filter misc
   filterMisc_S1<-reactive({
     current<-filterControl_S1()
@@ -2048,60 +1769,16 @@ shinyServer(function(input, output, session) {
   #filter human factor
   filterControl_S2<- reactive({
     current <- filterCond_S2()
-    if(input$winfilter_S2){current<-current[current$PCEC1 %in% input$win_S2 & !is.na(current$PCEC1),]}
-    if(input$extfilter_S2){current<-current[current$PCEC2 %in% input$ext_S2 & !is.na(current$PCEC2),]}
-    if(input$intfilter_S2){current<-current[current$PCEC3 %in% input$int_S2 & !is.na(current$PCEC3),]}
-    if(input$thermofilter_S2){current<-current[current$PCEC4 %in% input$thermo_S2 & !is.na(current$PCEC4),]}
-    if(input$curfilter_S2){current<-current[current$PCEC5 %in% input$cur_S2 & !is.na(current$PCEC5),]}
-    if(input$heatfilter_S2){current<-current[current$PCEC6 %in% input$heat_S2 & !is.na(current$PCEC6),]}
-    if(input$fanfilter_S2){current<-current[current$PCEC7 %in% input$fan_S2 & !is.na(current$PCEC7),]}
+    if(input$curfilter_S2){current<-current[current$PCEC1 %in% input$cur_S2 & !is.na(current$PCEC1),]}
+    if(input$fanfilter_S2){current<-current[current$PCEC2 %in% input$fan_S2 & !is.na(current$PCEC2),]}
+    if(input$winfilter_S2){current<-current[current$PCEC3 %in% input$win_S2 & !is.na(current$PCEC3),]}
+    if(input$doorfilter_S2){current<-current[current$PCEC4 %in% input$door_S2 & !is.na(current$PCEC4),]}
+    if(input$heatfilter_S2){current<-current[current$PCEC5 %in% input$heat_S2 & !is.na(current$PCEC5),]}
+    # if(input$heatfilter1){current<-current[current$PCEC6 %in% input$heat1 & !is.na(current$PCEC6),]}
+    # if(input$fanfilter1){current<-current[current$PCEC7 %in% input$fan1 & !is.na(current$PCEC7),]}
     current
   })
-  
-#   #possible controls
-#   output$controls_S2 <- renderUI( {
-#     availControls<-ctrvarlist[apply(filterCond_S2()[,ctrvars],2,FUN=function(x)max(x,na.rm=T)>0)]
-#     if(length(availControls>=1)){
-#       checkboxGroupInput("pclist_S2","",choices=availControls,selected=availControls)}
-#   })
-#   
-#   #filter controls
-#   filterControl_S2<-reactive({
-#     current<-filterCond_S2()
-#     if(input$pc_S2){
-#       if(input$andor_S2=="and"){
-#         if(length(input$pclist_S2)>1){
-#           a<-apply(current[,input$pclist_S2],1,all)
-#         } else if(length(input$pclist_S2==1)){
-#           a<-current[,input$pclist_S2]
-#         } else {
-#           a<-T
-#         }
-#         current[!is.na(a) & a,]
-#       } else if (input$andor_S2=="no"){
-#         if(length(input$pclist_S2)>1){
-#           a<-apply(current[,input$pclist_S2],1,any)
-#         } else if(length(input$pclist_S2==1)){
-#           a<-current[,input$pclist_S2]
-#         } else {
-#           a<-F
-#         }
-#         current[!is.na(a) & !a,]
-#       } else if (input$andor_S2=="or"){
-#         if(length(input$pclist_S2)>1){
-#           a<-apply(current[,input$pclist_S2],1,any)
-#         } else if(length(input$pclist_S2==1)){
-#           a<-current[,input$pclist_S2]
-#         } else {
-#           a<-T
-#         }
-#         current[!is.na(a) & a,]
-#       }
-#     } else{
-#       current 
-#     }
-#   })
-  
+
   
   #filter misc
   filterMisc_S2<-reactive({
@@ -2233,62 +1910,17 @@ shinyServer(function(input, output, session) {
   #filter human factor
   filterControl_S3<- reactive({
     current <- filterCond_S3()
-    if(input$winfilter_S3){current<-current[current$PCEC1 %in% input$win_S3 & !is.na(current$PCEC1),]}
-    if(input$extfilter_S3){current<-current[current$PCEC2 %in% input$ext_S3 & !is.na(current$PCEC2),]}
-    if(input$intfilter_S3){current<-current[current$PCEC3 %in% input$int_S3 & !is.na(current$PCEC3),]}
-    if(input$thermofilter_S3){current<-current[current$PCEC4 %in% input$thermo_S3 & !is.na(current$PCEC4),]}
-    if(input$curfilter_S3){current<-current[current$PCEC5 %in% input$cur_S3 & !is.na(current$PCEC5),]}
-    if(input$heatfilter_S3){current<-current[current$PCEC6 %in% input$heat_S3 & !is.na(current$PCEC6),]}
-    if(input$fanfilter_S3){current<-current[current$PCEC7 %in% input$fan_S3 & !is.na(current$PCEC7),]}
+    if(input$curfilter_S3){current<-current[current$PCEC1 %in% input$cur_S3 & !is.na(current$PCEC1),]}
+    if(input$fanfilter_S3){current<-current[current$PCEC2 %in% input$fan_S3 & !is.na(current$PCEC2),]}
+    if(input$winfilter_S3){current<-current[current$PCEC3 %in% input$win_S3 & !is.na(current$PCEC3),]}
+    if(input$doorfilter_S3){current<-current[current$PCEC4 %in% input$door_S3 & !is.na(current$PCEC4),]}
+    if(input$heatfilter_S3){current<-current[current$PCEC5 %in% input$heat_S3 & !is.na(current$PCEC5),]}
+    # if(input$heatfilter1){current<-current[current$PCEC6 %in% input$heat1 & !is.na(current$PCEC6),]}
+    # if(input$fanfilter1){current<-current[current$PCEC7 %in% input$fan1 & !is.na(current$PCEC7),]}
     current
   })
   
-  
-#   #possible controls
-#   output$controls_S3 <- renderUI( {
-#     availControls<-ctrvarlist[apply(filterCond_S3()[,ctrvars],2,FUN=function(x)max(x,na.rm=T)>0)]
-#     if(length(availControls>=1)){
-#       checkboxGroupInput("pclist_S3","",choices=availControls,selected=availControls)}
-#   })
-#   
-#   #filter controls
-#   filterControl_S3<-reactive({
-#     current<-filterCond_S3()
-#     if(input$pc_S3){
-#       if(input$andor_S3=="and"){
-#         if(length(input$pclist_S3)>1){
-#           a<-apply(current[,input$pclist_S3],1,all)
-#         } else if(length(input$pclist_S3==1)){
-#           a<-current[,input$pclist_S3]
-#         } else {
-#           a<-T
-#         }
-#         current[!is.na(a) & a,]
-#       } else if (input$andor_S3=="no"){
-#         if(length(input$pclist_S3)>1){
-#           a<-apply(current[,input$pclist_S3],1,any)
-#         } else if(length(input$pclist_S3==1)){
-#           a<-current[,input$pclist_S3]
-#         } else {
-#           a<-F
-#         }
-#         current[!is.na(a) & !a,]
-#       } else if (input$andor_S3=="or"){
-#         if(length(input$pclist_S3)>1){
-#           a<-apply(current[,input$pclist_S3],1,any)
-#         } else if(length(input$pclist_S3==1)){
-#           a<-current[,input$pclist_S3]
-#         } else {
-#           a<-T
-#         }
-#         current[!is.na(a) & a,]
-#       }
-#     } else{
-#       current 
-#     }
-#   })
-  
-  
+
   #filter misc
   filterMisc_S3<-reactive({
     current<-filterControl_S3()
@@ -2311,7 +1943,7 @@ shinyServer(function(input, output, session) {
     
     data<-data.frame()
     
-    columns <- c("TOP","TAAV","prev_ta","RH","VELAV","TOP_F","TAAV_F","prev_ta_F","VELAV_FPM","dayav_ta","dayav_ta_F","TRAV","TRAV_F","AGE","SEX","MET","INSUL","ASH","PMV","TSA","acc15","acc2","comf_ash_level","mci_level")
+    columns <- c("TOP","TAAV","prev_ta","RH","VELAV","TOP_F","TAAV_F","prev_ta_F","VELAV_FPM","TRAV","TRAV_F","AGE","SEX","MET","INSUL","ASH","PMV","TSA","acc15","acc2","comf_ash_level","mci_level")
     if(input$compare_S1){
       d<-filterMisc_S1()[,columns]
       #hide the error message
@@ -2467,7 +2099,7 @@ shinyServer(function(input, output, session) {
       }
       if(input$yaxis_sca_1 == "OutTemp"){
         y1 <- "prev_ta"
-        y1lab <- "Prevailing mean outdoor temperature (°C)"
+        y1lab <- "Monthly mean outdoor temperature (°C)"
       }
       if(input$yaxis_sca_1 == "AirTemp"){
         y1 <- "TAAV"
@@ -2504,7 +2136,7 @@ shinyServer(function(input, output, session) {
       }
       if(input$yaxis_sca_1 == "OutTemp"){
         y1 <- "prev_ta_F"
-        y1lab <- "Prevailing mean outdoor temperature (°F)"
+        y1lab <- "Monthly mean outdoor temperature (°F)"
       }
       if(input$yaxis_sca_1 == "AirTemp"){
         y1 <- "TAAV_F"
@@ -2544,7 +2176,7 @@ shinyServer(function(input, output, session) {
       }
       if(input$xaxis_sca_1 == "OutTemp"){
         x1 <- "prev_ta"
-        x1lab <- "Prevailing mean outdoor temperature (°C)"
+        x1lab <- "Monthly mean outdoor temperature (°C)"
       }
       if(input$xaxis_sca_1 == "AirTemp"){
         x1 <- "TAAV"
@@ -2581,7 +2213,7 @@ shinyServer(function(input, output, session) {
       }
       if(input$xaxis_sca_1 == "OutTemp"){
         x1 <- "prev_ta_F"
-        x1lab <- "Prevailing mean outdoor temperature (°F)"
+        x1lab <- "Monthly mean outdoor temperature (°F)"
       }
       if(input$xaxis_sca_1 == "AirTemp"){
         x1 <- "TAAV_F"
@@ -2646,7 +2278,7 @@ shinyServer(function(input, output, session) {
       }
       if(input$yaxis_sca_2 == "OutTemp"){
         y2 <- "prev_ta"
-        y2lab <- "Prevailing mean outdoor temperature (°C)"
+        y2lab <- "Monthly mean outdoor temperature (°C)"
       }
       if(input$yaxis_sca_2 == "AirTemp"){
         y2 <- "TAAV"
@@ -2683,7 +2315,7 @@ shinyServer(function(input, output, session) {
       }
       if(input$yaxis_sca_2 == "OutTemp"){
         y2 <- "prev_ta_F"
-        y2lab <- "Prevailing mean outdoor temperature (°F)"
+        y2lab <- "Monthly mean outdoor temperature (°F)"
       }
       if(input$yaxis_sca_2 == "AirTemp"){
         y2 <- "TAAV_F"
@@ -2723,7 +2355,7 @@ shinyServer(function(input, output, session) {
       }
       if(input$xaxis_sca_2 == "OutTemp"){
         x2 <- "prev_ta"
-        x2lab <- "Prevailing mean outdoor temperature (°C)"
+        x2lab <- "Monthly mean outdoor temperature (°C)"
       }
       if(input$xaxis_sca_2 == "AirTemp"){
         x2 <- "TAAV"
@@ -2760,7 +2392,7 @@ shinyServer(function(input, output, session) {
       }
       if(input$xaxis_sca_2 == "OutTemp"){
         x2 <- "prev_ta_F"
-        x2lab <- "Prevailing mean outdoor temperature (°F)"
+        x2lab <- "Monthly mean outdoor temperature (°F)"
       }
       if(input$xaxis_sca_2 == "AirTemp"){
         x2 <- "TAAV_F"
@@ -2800,7 +2432,8 @@ shinyServer(function(input, output, session) {
     
     
     if(input$sca_2_linear){
-      p <- p + stat_smooth(method="loess",alpha=0.3, size=0.75)
+      p <- p + geom_smooth(method="loess",alpha=0.3, size=0.75)
+
     }
     
     p
