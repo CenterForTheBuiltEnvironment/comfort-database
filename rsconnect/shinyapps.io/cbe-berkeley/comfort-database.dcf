@@ -1,0 +1,13 @@
+name: comfort-database
+title: comfort-database
+username:
+account: cbe-berkeley
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 398025
+bundleId: 1588867
+url: https://cbe-berkeley.shinyapps.io/comfort-database/
+when: 1537148785.47699
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: DBII_new_dataset1.RData
